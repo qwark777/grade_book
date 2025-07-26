@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ratingContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?android:attr/windowBackground">
+
+    <!-- Меню выбора рейтинга (предмет / кафедра / поведение) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/ratingDropdownLayout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Выберите рейтинг"
+        android:layout_marginBottom="16dp">
+
+        <AutoCompleteTextView
+            android:layout_marginTop="10dp"
+            android:id="@+id/ratingDropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:drawableEnd="@drawable/edit_button"
+            android:background="@android:color/transparent" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Горизонтальный список предметов (например, категории или фильтры) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/subjectRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:clipToPadding="false"
+        android:layoutDirection="ltr"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+         />
+
+    <!-- Вертикальный список учеников с рейтингами -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ratingRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="ifContentScrolls"
+        android:paddingBottom="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+</LinearLayout>

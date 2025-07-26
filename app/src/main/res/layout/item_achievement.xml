@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="100dp"
+    android:layout_height="100dp"
+    android:layout_margin="6dp">
+
+    <!-- Glow анимация позади -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/glowAnimation"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        app:lottie_loop="true"
+        app:lottie_autoPlay="true"
+        app:lottie_renderMode="software"
+        android:visibility="gone" />
+
+    <!-- Основной контент -->
+    <LinearLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="6dp"
+        android:background="@drawable/bg_card_rounded">
+
+        <ImageView
+            android:id="@+id/achievementImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="RE" />
+
+        <TextView
+            android:id="@+id/achievementTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Achievement"
+            android:textColor="@color/blue"
+            android:textStyle="bold"
+            android:fontFamily="@font/inter_bold"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/achievementDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12.07.2025"
+            android:textColor="@color/grafit"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+</FrameLayout>

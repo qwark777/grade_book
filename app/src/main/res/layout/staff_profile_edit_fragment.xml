@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ScrollView с основным содержимым -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:paddingTop="60dp"> <!-- Добавляем отступ сверху для кнопки -->
+
+            <!-- Аватарка с возможностью изменения -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+
+                <ImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_marginTop="25dp"
+                    android:src="@drawable/logo"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/avatar_frame"
+                    android:padding="7dp"
+                    android:contentDescription="Аватар профиля"/>
+
+                <ImageButton
+                    android:id="@+id/changePhotoButton"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:padding='6dp'
+                    android:backgroundTint="@color/orange"
+                    android:layout_gravity="bottom|end"
+                    android:scaleType="centerInside"
+                    android:background="@drawable/circle_button"
+                    android:src="@drawable/edit_button"
+                    />
+            </FrameLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/fullNameEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Полное имя"
+                    android:inputType="textPersonName"
+                    android:text="Иванов Иван Иванович" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/workPlaceEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Место работы"
+                    android:inputType="text"
+                    android:text="ООО 'Технологии будущего'"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/locationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Местоположение"
+                    android:inputType="text"
+                    android:text="г. Москва, Россия"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Описание -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/descriptionEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:hint="Описание"
+                    android:inputType="textMultiLine"
+                    android:gravity="top"
+                    android:text="Опытный разработчик с более чем 5-летним стажем. Специализация: мобильная разработка под Android и iOS."/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Достижения -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Достижения"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
+
+                <!-- Пример достижения -->
+                <TextView
+                    android:id="@+id/achievement1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ОМКРАТ - 2022"
+                    android:textSize="16sp"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/achievement2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="СОАСН - 2021"
+                    android:textSize="16sp"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/achievement3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="HEART OF THE CLASS - 2023"
+                    android:textSize="16sp"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Кнопка сохранения -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/saveButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Сохранить изменения"
+                android:layout_marginTop="24dp"
+                />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Фиксированная кнопка редактирования (не скроллится) -->
+    <ImageButton
+        android:id="@+id/exit_button"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="35dp"
+        android:layout_marginEnd="20dp"
+        android:backgroundTint="@color/orange"
+        android:background="@drawable/circle_button"
+        app:tint="@color/blue"
+        android:padding="0dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/plus_button"
+        android:rotation="45"/>
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+</RelativeLayout>

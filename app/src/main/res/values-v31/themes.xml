@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.ONE" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/soft_white</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+
+    </style>
+    <style name="CropperTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/mint</item>
+        <item name="colorPrimaryDark">@color/mint</item>
+        <item name="colorAccent">@color/white</item>
+    </style>
+</resources>

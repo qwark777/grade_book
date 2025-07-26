@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Grade Book</string>
+    <string name="crop_image_menu_crop">Готово</string>
+    <string name="start_mes">Привет я приложение для учебы с расписанием и оценками Grade Book</string>
+</resources>
