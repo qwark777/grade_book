@@ -1,13 +1,9 @@
 package com.example.one
 import android.os.Bundle
-import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import com.example.one.ui.student.StudentsFragment
+import com.example.one.ui.teacher.TeachersFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yourpackage.diaryschool.network.ApiManager
 
@@ -22,6 +18,26 @@ class AdminMainLayout: AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.admin_main_layout)
 
+        val mockTeachers = listOf(
+            TeacherData(
+                fullName = "Иван Петров",
+                workPlace = "Школа №5",
+                location = "Москва",
+                subject = "Математика",
+                classes = "10А, 11Б",
+                username = "ivan.petrov",
+                password = "12345"
+            ),
+            TeacherData(
+                fullName = "Ольга Смирнова",
+                workPlace = "Лицей №2",
+                location = "Санкт-Петербург",
+                subject = "Химия",
+                classes = "9А, 9Б",
+                username = "olga.smirnova",
+                password = "54321"
+            )
+        )
 
 
 
@@ -51,6 +67,12 @@ class AdminMainLayout: AppCompatActivity() {
                 R.id.nav_profile -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, ProfileFragment())
+                        .commit()
+                    true
+                }
+                R.id.nav_teachers -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, TeachersFragment())
                         .commit()
                     true
                 }

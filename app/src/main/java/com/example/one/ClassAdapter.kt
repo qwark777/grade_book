@@ -14,10 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
  *
  * @param onClick — функция, вызываемая при нажатии на кнопку класса.
  */
-data class ClassItem(
-    val name: String,
-    val studentCount: Int
-)
+
 
 class ClassAdapter(
     private val onClick: (ClassItem) -> Unit

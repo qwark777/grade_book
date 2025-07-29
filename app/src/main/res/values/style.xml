@@ -8,5 +8,11 @@
         <item name="itemIconSize">28dp</item>
 
     </style>
+    <style name="PopupDialogStyle" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
 
 </resources>

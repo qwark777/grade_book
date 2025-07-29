@@ -1,5 +1,6 @@
 package com.example.one
 
+import android.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,30 +9,21 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.example.one.adapters.RatingAdapter
+import com.example.one.adapters.RatingItem
 import com.example.one.databinding.RatingFragmentBinding
+import com.yourpackage.diaryschool.network.ApiManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-sealed class DropdownItem {
-    data class Header(val title: String) : DropdownItem()
-    data class Option(val label: String, val type: String) : DropdownItem()
-}
-
 class RatingFragment : Fragment() {
-
-    private lateinit var subjectRecycler: RecyclerView
-    private lateinit var ratingRecycler: RecyclerView
-
-    private lateinit var subjectAdapter: SubjectAdapter
-    private lateinit var ratingAdapter: RatingAdapter
-
-    private val subjects = listOf("Математика", "Физика", "Русский", "Информатика", "Химия")
-    private var currentSubjectIndex = 0
 
     private var _binding: RatingFragmentBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var ratingAdapter: RatingAdapter
+    private lateinit var apiManager: ApiManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,53 +34,58 @@ class RatingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        subjectRecycler = binding.subjectRecycler
-        ratingRecycler = binding.ratingRecycler
-
-        subjectAdapter = SubjectAdapter(subjects) { index ->
-            currentSubjectIndex = index
-            loadRatings(subjects[index])
-        }
-
-        subjectRecycler.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        subjectRecycler.adapter = subjectAdapter
+        apiManager = ApiManager(requireContext())
 
         ratingAdapter = RatingAdapter()
-        ratingRecycler.layoutManager = LinearLayoutManager(requireContext())
-        ratingRecycler.adapter = ratingAdapter
+        binding.ratingRecycler.layoutManager = LinearLayoutManager(requireContext())
+        binding.ratingRecycler.adapter = ratingAdapter
 
-        // Загрузим рейтинг для первого предмета
-        loadRatings(subjects[currentSubjectIndex])
+        // Показываем фильтр
+        binding.ratingDropdown.visibility = View.VISIBLE
 
-        val dropdownOptions = listOf(
-            "Математика", "Физика", "Русский", "Информатика", "Химия",
-            "Кафедра Естественных наук", "Кафедра Гуманитарных",
-            "Дисциплина", "Активность"
-        )
-
-        val dropdownAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, dropdownOptions)
-        binding.ratingDropdown.setAdapter(dropdownAdapter)
+        // Пример: просто добавим один пункт "Общий рейтинг"
+        val options = listOf("Общий рейтинг")
+        val adapter = ArrayAdapter(requireContext(), R.layout.simple_dropdown_item_1line, options)
+        binding.ratingDropdown.setAdapter(adapter)
 
         binding.ratingDropdown.setOnItemClickListener { _, _, position, _ ->
-            val selected = dropdownOptions[position]
-            loadRatings(selected)
+            when (position) {
+                0 -> loadGlobalRatings()
+            }
+        }
+
+        // По умолчанию — сразу загружаем
+        binding.ratingDropdown.setText("Общий рейтинг", false)
+        loadGlobalRatings()
+    }
+
+
+    private fun loadGlobalRatings() {
+        lifecycleScope.launch {
+            val students = withContext(Dispatchers.IO) {
+                apiManager.getAllStudentScores()
+            }
+
+            val result = students.mapNotNull { student ->
+                val grades = student.grades
+                if (grades.isEmpty()) return@mapNotNull null
+
+                val total = grades.sumOf { it.value }
+                RatingItem(
+                    place = 0, // потом обновим
+                    name = student.student_name,
+                    average = total // здесь теперь сумма, а не среднее
+                )
+            }.sortedByDescending { it.average }
+
+            val ranked = result.mapIndexed { index, item ->
+                item.copy(place = index + 1)
+            }
+
+            ratingAdapter.submitList(ranked)
         }
     }
 
-    private fun loadRatings(subject: String) {
-        lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                listOf(
-                    RatingItem(1, "Иванов И.И.", 96),
-                    RatingItem(2, "Петрова А.А.", 92),
-                    RatingItem(3, "Смирнов Д.С.", 91),
-                    RatingItem(4, "Сидоров Б.Б.", 87),
-                    RatingItem(5, "Кузнецова Е.Ю.", 85)
-                )
-            }
-            ratingAdapter.submitList(result)
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

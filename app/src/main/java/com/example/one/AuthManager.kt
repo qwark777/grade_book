@@ -65,6 +65,18 @@ data class ProfileData(
     val bio: String
 )
 
+data class StudentScoreResponse(
+    val student_id: Int,
+    val student_name: String,
+    val grades: List<GradeItem>
+)
+
+data class GradeItem(
+    val subject: String,
+    val value: Int,
+    val date: String
+)
+
 
 // -------------------- API INTERFACE --------------------
 interface DiaryApiService {
@@ -130,6 +142,9 @@ interface DiaryApiService {
         @Part("bio") bio: String,
         @Part photo: MultipartBody.Part? = null
     ): Response<Unit>
+
+    @GET("student-scores-full")
+    suspend fun getAllStudentScores(): Response<List<StudentScoreResponse>>
 
 }
 
@@ -370,6 +385,13 @@ class ApiManager(context: Context) {
             Log.e("API_FULL_UPDATE", it.localizedMessage ?: "Full update error")
             false
         }
+    }
+
+    suspend fun getAllStudentScores(): List<StudentScoreResponse> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = api.getAllStudentScores()
+            if (response.isSuccessful) response.body() ?: emptyList() else emptyList()
+        }.getOrDefault(emptyList())
     }
 
 
