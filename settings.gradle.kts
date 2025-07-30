@@ -20,6 +20,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ONE"
+rootProject.name = "gradeBook"
 include(":app")
  

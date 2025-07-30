@@ -1,4 +1,4 @@
-package com.example.one
+package com.example.one.adapters
 
 import android.annotation.SuppressLint
 import android.graphics.Typeface
@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.one.R
 
 class SubjectAdapter(
     private val subjects: List<String>,

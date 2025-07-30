@@ -1,13 +1,14 @@
-package com.example.one
+package com.example.one.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.one.ClassItem
+import com.example.one.R
 
 /**
  * Адаптер для отображения списка классов в виде кнопок.

@@ -1,4 +1,4 @@
-package com.example.one
+package com.example.one.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.example.one.R
 
 class AchievementsAdapter(
     private val achievements: MutableList<Int>

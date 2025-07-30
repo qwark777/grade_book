@@ -5,6 +5,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Переключение между преподавателями и учениками -->
+    <RadioGroup
+        android:id="@+id/switchRoleGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp">
+
+        <RadioButton
+            android:id="@+id/teachersRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Преподаватели"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/studentsRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ученики"
+            android:layout_marginStart="16dp"/>
+    </RadioGroup>
+
     <EditText
         android:id="@+id/searchEditText"
         android:layout_width="match_parent"

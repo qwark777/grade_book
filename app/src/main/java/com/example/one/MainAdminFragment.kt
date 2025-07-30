@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.one.adapters.ColoredSpinnerAdapter
 import com.yourpackage.diaryschool.network.ApiManager
 import kotlinx.coroutines.launch
 

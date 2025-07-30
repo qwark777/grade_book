@@ -54,6 +54,8 @@ class StaffEditProfileFragment : Fragment() {
         viewModel = ApiManager(requireContext())
 
         imageView = view.findViewById(R.id.profileImage)
+
+
         saveButton = view.findViewById(R.id.saveButton)
         progressBar = view.findViewById(R.id.progressBar)
 
@@ -73,6 +75,7 @@ class StaffEditProfileFragment : Fragment() {
         saveButton.setOnClickListener {
             saveProfile()
         }
+        TODO("Заполнение полей из кешп + сервера")
     }
 
     private fun startCrop(uri: Uri) {

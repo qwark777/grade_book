@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.one.adapters.AchievementsAdapter
 import com.google.android.flexbox.*
 import com.yourpackage.diaryschool.network.ApiManager
 import kotlinx.coroutines.Dispatchers

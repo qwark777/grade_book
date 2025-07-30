@@ -1,4 +1,4 @@
-package com.example.one.ui.student
+package com.example.one.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -27,16 +27,13 @@ class StudentAdapter : ListAdapter<StudentData, StudentAdapter.StudentViewHolder
         private val nameText: TextView = itemView.findViewById(R.id.studentName)
         private val classText: TextView = itemView.findViewById(R.id.studentClass)
         private val schoolText: TextView = itemView.findViewById(R.id.studentSchool)
-        private val editButton: Button = itemView.findViewById(R.id.editStudentButton)
 
         fun bind(student: StudentData) {
             nameText.text = student.fullName
             classText.text = student.className
             schoolText.text = student.school
 
-            editButton.setOnClickListener {
-                // TODO: реализовать редактирование
-            }
+
         }
     }
 

@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.one.adapters.ClassAdapter
 import com.yourpackage.diaryschool.network.ApiManager
 import kotlinx.coroutines.launch
 

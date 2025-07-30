@@ -1,9 +1,8 @@
 package com.example.one
+import TeachersFragment
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.example.one.ui.student.StudentsFragment
-import com.example.one.ui.teacher.TeachersFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yourpackage.diaryschool.network.ApiManager
 

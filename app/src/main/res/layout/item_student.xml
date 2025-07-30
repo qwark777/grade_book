@@ -17,7 +17,7 @@
         <ImageView
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/edit_button"
+            android:src="@drawable/placeholder"
             android:contentDescription="Фото"
             android:layout_marginEnd="12dp" />
 
@@ -48,10 +48,5 @@
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <Button
-            android:id="@+id/editStudentButton"
-            android:text="Edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

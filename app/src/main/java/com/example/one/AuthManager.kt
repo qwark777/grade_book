@@ -31,6 +31,13 @@ data class Student(val id: Int, val name: String)
 data class Subject(val id: Int, val name: String)
 data class Class(val id: Int, val name: String)
 
+data class Student2(
+    val id: Int,
+    val full_name: String,  // Измените name на full_name
+    val class_name: String? = null,
+    val photo_url: String? = null,
+)
+
 data class Profile(
     val id: Int,
     val userId: Int,
@@ -146,6 +153,12 @@ interface DiaryApiService {
     @GET("student-scores-full")
     suspend fun getAllStudentScores(): Response<List<StudentScoreResponse>>
 
+
+    @GET("students/all")
+    suspend fun getAllStudents(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 20
+    ): Response<List<Student2>>
 }
 
 // -------------------- API MANAGER --------------------
@@ -395,4 +408,10 @@ class ApiManager(context: Context) {
     }
 
 
+    suspend fun getAllStudents(page: Int = 1, perPage: Int = 20): List<Student2> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = api.getAllStudents(page, perPage)
+            if (response.isSuccessful) response.body() ?: emptyList() else emptyList()
+        }.getOrDefault(emptyList())
+    }
 }

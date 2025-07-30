@@ -9,8 +9,12 @@
         android:iconTint="@color/mint"
         android:title="Рейтинг"/>
     <item
+        android:id="@+id/nav_messages"
+        android:icon="@drawable/messages"
+        android:title="Сообщения"/>
+    <item
         android:id="@+id/nav_teachers"
-        android:icon="@drawable/profile"
+        android:icon="@drawable/users"
         android:title="Люди"/>
     <item
         android:id="@+id/nav_profile"

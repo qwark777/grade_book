@@ -1,4 +1,4 @@
-package com.example.one.ui.teacher
+package com.example.one.adapters
 
 import android.view.LayoutInflater
 import android.view.View

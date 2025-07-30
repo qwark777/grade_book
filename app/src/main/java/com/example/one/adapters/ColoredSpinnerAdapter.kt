@@ -1,4 +1,4 @@
-package com.example.one
+package com.example.one.adapters
 
 import android.content.Context
 import android.graphics.Typeface
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import com.example.one.R
 
 class ColoredSpinnerAdapter(
     context: Context,
