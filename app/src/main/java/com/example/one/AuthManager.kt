@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
 import androidx.core.content.edit
 import okhttp3.ResponseBody
 import android.graphics.BitmapFactory
+import com.example.one.ConversationPreview
 
 // -------------------- DATA MODELS --------------------
 data class LoginRequest(val username: String, val password: String)
@@ -62,7 +63,8 @@ data class TokenVerificationResponse(
     val username: String,
     val role: String,
     val access_token: String,
-    val token_type: String
+    val token_type: String,
+    val user_id: Int
 )
 
 data class ProfileData(
@@ -82,6 +84,29 @@ data class GradeItem(
     val subject: String,
     val value: Int,
     val date: String
+)
+
+
+data class Teacher2(
+    val id: Int,
+    val full_name: String,
+    val work_place: String?,
+    val location: String?,
+    val subject: String?,
+    val classes: String?,
+    val username: String?,
+    val password: String?
+)
+
+data class SendMessageRequest(
+    val receiver_id: Int,
+    val content: String
+)
+
+data class MessageResponse(
+    val sender_id: Int,
+    val content: String,
+    val created_at: String
 )
 
 
@@ -154,11 +179,30 @@ interface DiaryApiService {
     suspend fun getAllStudentScores(): Response<List<StudentScoreResponse>>
 
 
-    @GET("students/all")
-    suspend fun getAllStudents(
+    @GET("users/all")
+    suspend fun getAllUsersByRole(
+        @Query("role") role: String,
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 20
-    ): Response<List<Student2>>
+    ): Response<List<Map<String, Any>>>
+
+
+    @POST("messages/send")
+    suspend fun sendMessage(
+        @Body message: SendMessageRequest
+    ): Response<Unit>
+
+    @GET("messages/{userId}")
+    suspend fun getMessagesWithUser(
+        @Path("userId") userId: Int
+    ): Response<List<MessageResponse>>
+
+    @GET("conversations")
+    suspend fun getStartedConversations(
+        @Header("Authorization") authHeader: String
+    ): Response<List<ConversationPreview>>
+
+
 }
 
 // -------------------- API MANAGER --------------------
@@ -199,14 +243,27 @@ class ApiManager(context: Context) {
 
     private val api = retrofit.create(DiaryApiService::class.java)
 
+
+    fun saveUserId(id: Int) {
+        prefs.edit().putInt("user_id", id).apply()
+    }
+
+    fun getUserId(): Int = prefs.getInt("user_id", -1)
     fun saveToken(token: String) {
         prefs.edit { putString("access_token", token) }
     }
 
     fun getToken(): String? = prefs.getString("access_token", null)
 
-    fun clearToken() {
-        prefs.edit { remove("access_token") }
+    fun clearData() {
+        prefs.edit {
+            remove("access_token")
+                .remove("user_id")
+                .remove("full_name")
+                .remove("work_place")
+                .remove("location")
+                .remove("bio")
+        }
     }
 
     suspend fun register(username: String, password: String): Boolean = withContext(Dispatchers.IO) {
@@ -223,13 +280,16 @@ class ApiManager(context: Context) {
             val response = api.login(username, password)
             if (response.isSuccessful) {
                 response.body()?.access_token?.let { saveToken(it) }
-                true
+
+                val isValid = isTokenValid() 
+                isValid
             } else false
         }.getOrElse {
             Log.e("API_LOGIN", it.localizedMessage ?: "Unknown error")
             false
         }
     }
+
 
     suspend fun getProtectedMessage(): String? = withContext(Dispatchers.IO) {
         runCatching {
@@ -339,9 +399,12 @@ class ApiManager(context: Context) {
         runCatching {
             val response = api.verifyToken("Bearer $token")
             if (response.isSuccessful) {
-                response.body()?.access_token?.let { saveToken(it) }
+                val body = response.body()
+                body?.access_token?.let { saveToken(it) }
+                body?.user_id?.let { saveUserId(it) }
                 true
-            } else {
+            }
+            else {
                 false
             }
         }.getOrElse {
@@ -410,8 +473,83 @@ class ApiManager(context: Context) {
 
     suspend fun getAllStudents(page: Int = 1, perPage: Int = 20): List<Student2> = withContext(Dispatchers.IO) {
         runCatching {
-            val response = api.getAllStudents(page, perPage)
+            val response = api.getAllUsersByRole("student", page, perPage)
+            if (response.isSuccessful) {
+                val raw = response.body() ?: return@runCatching emptyList()
+                raw.mapNotNull { item ->
+                    try {
+                        Student2(
+                            id = (item["id"] as? Double)?.toInt() ?: return@mapNotNull null,
+                            full_name = item["full_name"] as? String ?: "Неизвестно",
+                            class_name = item["class_name"] as? String,
+                            photo_url = item["photo_url"] as? String
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            } else {
+                emptyList()
+            }
+        }.getOrDefault(emptyList())
+    }
+
+
+
+    suspend fun getAllTeachers(page: Int = 1, perPage: Int = 20): List<Teacher2> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = api.getAllUsersByRole("teacher", page, perPage)
+            if (response.isSuccessful) {
+                val raw = response.body() ?: return@runCatching emptyList()
+                raw.mapNotNull { item ->
+                    try {
+                        Teacher2(
+                            id = (item["id"] as? Double)?.toInt() ?: return@mapNotNull null,
+                            full_name = item["full_name"] as? String ?: "Неизвестно",
+                            work_place = item["work_place"] as? String,
+                            location = item["location"] as? String,
+                            subject = item["subject"] as? String,
+                            classes = item["classes"] as? String,
+                            username = item["username"] as? String,
+                            password = item["password"] as? String
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            } else {
+                emptyList()
+            }
+        }.getOrDefault(emptyList())
+    }
+
+
+
+    suspend fun sendMessage(receiverId: Int, content: String): Boolean = withContext(Dispatchers.IO) {
+        runCatching {
+            val request = SendMessageRequest(receiverId, content)
+            val response = api.sendMessage(request)
+            response.isSuccessful
+        }.getOrElse {
+            Log.e("API_SEND_MESSAGE", it.localizedMessage ?: "Send message error")
+            false
+        }
+    }
+
+    suspend fun getMessagesWithUser(userId: Int): List<MessageResponse> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = api.getMessagesWithUser(userId)
             if (response.isSuccessful) response.body() ?: emptyList() else emptyList()
         }.getOrDefault(emptyList())
     }
+
+
+    suspend fun getStartedConversations(): List<ConversationPreview> = withContext(Dispatchers.IO) {
+        runCatching {
+            val token = getToken() ?: return@withContext emptyList()
+            val response = api.getStartedConversations("Bearer $token")
+            if (response.isSuccessful) response.body() ?: emptyList() else emptyList()
+        }.getOrDefault(emptyList())
+    }
+
 }

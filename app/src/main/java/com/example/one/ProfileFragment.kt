@@ -85,13 +85,13 @@ class ProfileFragment : Fragment() {
         workText.text = prefs.getString("work_place", "Место работы")
         locationText.text = prefs.getString("location", "Местоположение")
         bioText.text = prefs.getString("bio", "Описание")
-
+//        TODO("Поменять значение по умолчанию")
         editButton.setOnClickListener {
             replaceFragment(StaffEditProfileFragment())
         }
 
         logout.setOnClickListener {
-            ApiManager(requireContext()).clearToken()
+            ApiManager(requireContext()).clearData()
             startActivity(Intent(activity, MainActivity::class.java))
         }
 

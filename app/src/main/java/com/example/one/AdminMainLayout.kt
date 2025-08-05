@@ -1,8 +1,9 @@
 package com.example.one
-import TeachersFragment
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import com.example.one.ui.messages.ConversationsFragment
+import com.example.one.ui.teacher.TeachersFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yourpackage.diaryschool.network.ApiManager
 
@@ -75,7 +76,12 @@ class AdminMainLayout: AppCompatActivity() {
                         .commit()
                     true
                 }
-
+                R.id.nav_messages -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, ConversationsFragment())
+                        .commit()
+                    true
+                }
                 else -> false
             }
         }

@@ -1,3 +1,5 @@
+package com.example.one.ui.teacher
+
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,35 +26,10 @@ class TeachersFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val teacherAdapter = TeacherAdapter()
-    private val studentAdapter = StudentAdapter() // создай аналог TeacherAdapter
+    private val studentAdapter = StudentAdapter()
 
     private lateinit var apiManager: ApiManager
     private val students = mutableListOf<StudentData>()
-    private val mockTeachers = listOf(
-        TeacherData(
-            fullName = "Иван Петров",
-            workPlace = "Школа №5",
-            location = "Москва",
-            subject = "Математика",
-            classes = "10А, 11Б",
-            username = "ivan.petrov",
-            password = "12345"
-        ),
-        TeacherData(
-            fullName = "Ольга Смирнова",
-            workPlace = "Лицей №2",
-            location = "Санкт-Петербург",
-            subject = "Химия",
-            classes = "9А, 9Б",
-            username = "olga.smirnova",
-            password = "54321"
-        )
-    )
-
-    private val mockStudents = listOf(
-        StudentData("Алексей Сидоров", "8Б", "Москва"),
-        StudentData("Мария Иванова", "9А", "Санкт-Петербург")
-    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,15 +43,16 @@ class TeachersFragment : Fragment() {
         binding.teacherRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         apiManager = ApiManager(requireContext())
-        // изначально показываем преподавателей
+
+        // Изначально показываем преподавателей
         binding.teacherRecyclerView.adapter = teacherAdapter
-        teacherAdapter.submitList(mockTeachers)
+        loadTeachers()
 
         binding.switchRoleGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.teachersRadioButton -> {
                     binding.teacherRecyclerView.adapter = teacherAdapter
-                    teacherAdapter.submitList(mockTeachers)
+                    loadTeachers()
                     binding.addTeacherButton.text = "Добавить преподавателя"
                 }
 
@@ -90,10 +68,38 @@ class TeachersFragment : Fragment() {
             val isTeacherSelected = binding.teachersRadioButton.isChecked
             if (isTeacherSelected) {
                 AddTeacherDialogFragment.newInstance {
-                    // Обновить список преподавателей
+                    loadTeachers()
                 }.show(parentFragmentManager, "AddTeacherDialog")
             } else {
-                // здесь вызов диалога для добавления ученика (нужно реализовать)
+                // TODO: реализуй диалог добавления ученика
+                Toast.makeText(requireContext(), "Добавление ученика пока не реализовано", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun loadTeachers() {
+        lifecycleScope.launch {
+            try {
+                val serverTeachers = withContext(Dispatchers.IO) {
+                    apiManager.getAllTeachers() // должен вернуть List<TeacherNetworkModel>
+                }
+                println(serverTeachers)
+                val teachers = serverTeachers.map { teacher ->
+                    TeacherData(
+                        fullName = teacher.full_name ?: "Неизвестно",
+                        workPlace = teacher.work_place ?: "Не указано",
+                        location = teacher.location ?: "Не указано",
+                        subject = teacher.subject ?: "Предмет не указан",
+                        classes = teacher.classes ?: "Классы не указаны",
+                        username = teacher.username ?: "",
+                        password = teacher.password ?: ""
+                    )
+                }
+
+                teacherAdapter.submitList(teachers)
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Ошибка загрузки преподавателей: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -101,8 +107,6 @@ class TeachersFragment : Fragment() {
     private fun loadStudents() {
         lifecycleScope.launch {
             try {
-                // Показываем индикатор загрузки (если есть)
-
                 val serverStudents = withContext(Dispatchers.IO) {
                     apiManager.getAllStudents()
                 }
@@ -111,16 +115,14 @@ class TeachersFragment : Fragment() {
                 students.addAll(serverStudents.map { student ->
                     StudentData(
                         fullName = student.full_name ?: "Неизвестно",
-                        className =  "Не указан",
-                        school = "Школа не указана"
+                        className = student.class_name ?: "Не указан",
+                        school = "Школа не указана" // если появится в API — обновим
                     )
                 })
 
-                // Обновляем UI в главном потоке
                 studentAdapter.submitList(students.toList())
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Ошибка загрузки: ${e.message}", Toast.LENGTH_SHORT).show()
-            } finally {
+                Toast.makeText(requireContext(), "Ошибка загрузки учеников: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

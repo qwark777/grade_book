@@ -97,11 +97,12 @@ class MainActivity : AppCompatActivity() {
             if (tokenIsValid) {
                 // Переход к нужной активности (например, Admin)
                 startActivity(Intent(this@MainActivity, AdminMainLayout::class.java))
+//                TODO("Проверка админ или студент")
                 finish() // Закрываем MainActivity
             } else {
                 // Токен недействителен — продолжаем загрузку MainActivity
                 keepSplashVisible = false // Скрываем splash
-
+                apiManager.clearData()
                 // Теперь можно грузить UI
                 initUI()
             }

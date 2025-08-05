@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.flexbox)
     implementation("com.github.CanHub:Android-Image-Cropper:4.3.3")
 
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,21 +1,8 @@
-<!-- res/drawable/rounded_square_avatar.xml -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Обводка -->
-    <item>
-        <shape android:shape="rectangle">
-            <corners android:radius="16dp"/>
-            <stroke android:width="2dp" android:color="@color/blue"/>
-            <solid android:color="@color/blue"/>
-            <size android:width="80dp" android:height="80dp"/>
-
-        </shape>
-    </item>
-
-    <!-- Область для аватарки -->
-    <item android:left="4dp" android:top="4dp" android:right="4dp" android:bottom="4dp">
-        <shape android:shape="rectangle">
-            <corners android:radius="12dp"/>
-            <solid android:color="@color/soft_white"/>
-        </shape>
-    </item>
-</layer-list>
+<!-- avatar_border_ring.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@android:color/transparent" />
+    <stroke
+        android:width="4dp"
+        android:color="@color/grafit" />
+</shape>

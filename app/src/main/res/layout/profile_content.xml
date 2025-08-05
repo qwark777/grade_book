@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/soft_white"
     android:clipChildren="false"
-    android:clipToPadding="false"
-    >
+    android:clipToPadding="false">
 
-    <!-- Аватар пользователя -->
-    <ImageView
-        android:id="@+id/imageView"
+
+
+    <!-- Контейнер с рамкой и аватаркой -->
+    <FrameLayout
+        android:id="@+id/avatarContainer"
         android:layout_width="170dp"
         android:layout_height="170dp"
-        android:layout_marginStart="20dp"
         android:layout_marginTop="40dp"
-        android:padding="10dp"
-        android:src="@drawable/placeholder"
-        android:background="@drawable/avatar_frame"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginStart="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Рамка -->
+        <ImageView
+            android:id="@+id/avatarBorder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/avatar_frame" />
+
+        <!-- Аватар -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imageView"
+            android:layout_width="165dp"
+            android:layout_height="165dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
+    </FrameLayout>
 
     <!-- Кнопка редактирования -->
     <ImageButton
@@ -53,7 +70,7 @@
         android:textColor="@color/blue"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/imageView"
+        app:layout_constraintStart_toEndOf="@id/avatarContainer"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Место работы -->
@@ -68,7 +85,7 @@
         android:gravity="center"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/imageView"
+        app:layout_constraintStart_toEndOf="@id/avatarContainer"
         app:layout_constraintTop_toBottomOf="@id/name" />
 
     <!-- Локация -->
@@ -83,12 +100,22 @@
         android:textColor="@color/blue"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/work"
-        app:layout_constraintStart_toEndOf="@id/imageView"
+        app:layout_constraintStart_toEndOf="@id/avatarContainer"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Заголовок Достижения -->
+    <!-- Биография -->
+    <TextView
+        android:id="@+id/bio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/avatarContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Линия -->
+    <!-- Заголовок -->
     <TextView
         android:id="@+id/achivment"
         android:layout_width="match_parent"
@@ -99,10 +126,9 @@
         android:text="Достижения"
         android:textColor="@color/blue"
         android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@id/bio"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bio" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <View
         android:id="@+id/divider2"
@@ -113,7 +139,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- RecyclerView достижений -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/achievementsRecyclerView"
         android:layout_width="match_parent"
@@ -129,8 +154,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:listitem="@layout/item_achievement" />
 
-
-    <!-- Кнопка выхода -->
     <Button
         android:id="@+id/logout"
         android:layout_width="wrap_content"
@@ -143,16 +166,5 @@
         android:fontFamily="@font/inter_bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/achievementsRecyclerView" />
-
-    <TextView
-        android:id="@+id/bio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        android:gravity="center"
-        android:layout_marginTop="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/achivment"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        tools:layout_editor_absoluteX="168dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,3 +30,13 @@ data class RatingItem(
     val name: String,
     val average: Int
 )
+
+data class ConversationPreview(
+    val conversation_id: Int,
+    val user_id: Int,
+    val full_name: String,
+    val photo_url: String?,
+    val last_message: String,
+    val last_time: String,
+    val last_sender_id: Int
+)
