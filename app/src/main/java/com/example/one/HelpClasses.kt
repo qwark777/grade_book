@@ -40,3 +40,9 @@ data class ConversationPreview(
     val last_time: String,
     val last_sender_id: Int
 )
+
+interface UserBase {
+    val id: Int
+    val full_name: String
+    val photo_url: String?
+}

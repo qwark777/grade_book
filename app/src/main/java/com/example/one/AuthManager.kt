@@ -109,6 +109,14 @@ data class MessageResponse(
     val created_at: String
 )
 
+data class UserPublicInfo(
+    val id: Int,
+    val full_name: String,
+    val role: String,
+    val photo_url: String?,
+    val class_name: String?,
+    val work_place: String?
+)
 
 // -------------------- API INTERFACE --------------------
 interface DiaryApiService {
@@ -202,6 +210,10 @@ interface DiaryApiService {
         @Header("Authorization") authHeader: String
     ): Response<List<ConversationPreview>>
 
+    @GET("users/{userId}")
+    suspend fun getUserPublicInfo(
+        @Path("userId") userId: Int
+    ): Response<UserPublicInfo>
 
 }
 
@@ -550,6 +562,17 @@ class ApiManager(context: Context) {
             val response = api.getStartedConversations("Bearer $token")
             if (response.isSuccessful) response.body() ?: emptyList() else emptyList()
         }.getOrDefault(emptyList())
+    }
+
+
+    suspend fun getUserPublicInfo(userId: Int): UserPublicInfo? = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = api.getUserPublicInfo(userId)
+            if (response.isSuccessful) response.body() else null
+        }.getOrElse {
+            Log.e("API_USER_INFO", it.localizedMessage ?: "User info error")
+            null
+        }
     }
 
 }
