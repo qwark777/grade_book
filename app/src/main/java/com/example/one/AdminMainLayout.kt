@@ -3,7 +3,8 @@ import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.example.one.ui.messages.ConversationsFragment
-import com.example.one.ui.teacher.TeachersFragment
+import com.example.one.ui.teacher.UsersFragment
+import com.example.one.ui.timetable.TimetableFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yourpackage.diaryschool.network.ApiManager
 
@@ -11,6 +12,17 @@ import com.yourpackage.diaryschool.network.ApiManager
 class AdminMainLayout: AppCompatActivity() {
 
     private lateinit var apiManager: ApiManager
+    fun openChat(userId: Int) {
+        // переключаем нижнее меню
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+        bottomNav.selectedItemId = R.id.nav_messages
+
+        // сразу открываем чат
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, com.example.one.ui.messages.MessageFragment.newInstance(userId))
+            .addToBackStack("chat_$userId")
+            .commit()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,26 +30,6 @@ class AdminMainLayout: AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.admin_main_layout)
 
-        val mockTeachers = listOf(
-            TeacherData(
-                fullName = "Иван Петров",
-                workPlace = "Школа №5",
-                location = "Москва",
-                subject = "Математика",
-                classes = "10А, 11Б",
-                username = "ivan.petrov",
-                password = "12345"
-            ),
-            TeacherData(
-                fullName = "Ольга Смирнова",
-                workPlace = "Лицей №2",
-                location = "Санкт-Петербург",
-                subject = "Химия",
-                classes = "9А, 9Б",
-                username = "olga.smirnova",
-                password = "54321"
-            )
-        )
 
 
 
@@ -53,17 +45,18 @@ class AdminMainLayout: AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_home -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, ClassFragment())
+                        .replace(R.id.fragment_container, TimetableFragment(1))
+//                        TODO("получение id класса в котором учится ")
                         .commit()
                     true
                 }
 
-                R.id.nav_rating -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, RatingFragment())
-                        .commit()
-                    true
-                }
+//                R.id.nav_rating -> {
+//                    supportFragmentManager.beginTransaction()
+//                        .replace(R.id.fragment_container, RatingFragment())
+//                        .commit()
+//                    true
+//                }
                 R.id.nav_profile -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, ProfileFragment())
@@ -72,13 +65,19 @@ class AdminMainLayout: AppCompatActivity() {
                 }
                 R.id.nav_teachers -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, TeachersFragment())
+                        .replace(R.id.fragment_container, UsersFragment())
                         .commit()
                     true
                 }
                 R.id.nav_messages -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, ConversationsFragment())
+                        .commit()
+                    true
+                }
+                R.id.nav_performance ->{
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, PerformanceFragment())
                         .commit()
                     true
                 }

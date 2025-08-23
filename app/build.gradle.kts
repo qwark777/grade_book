@@ -48,7 +48,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
@@ -59,10 +58,12 @@ dependencies {
     implementation(libs.circleimageview)
     implementation(libs.lottie)
     implementation(libs.flexbox)
-    implementation("com.github.CanHub:Android-Image-Cropper:4.3.3")
-
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-
+    implementation(libs.android.image.cropper.v433)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    implementation(libs.glide)
+    implementation(libs.material)
+    implementation(libs.androidx.viewpager2)
+    implementation(libs.mpandroidchart)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

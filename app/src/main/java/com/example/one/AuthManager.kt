@@ -2,25 +2,32 @@ package com.yourpackage.diaryschool.network
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.edit
+import com.example.one.ConversationPreview
+import com.example.one.StudentSubjectScore
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.Response
+import okhttp3.ResponseBody
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.Response as RetrofitResponse
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.io.File
 import java.util.concurrent.TimeUnit
-import androidx.core.content.edit
-import okhttp3.ResponseBody
-import android.graphics.BitmapFactory
-import com.example.one.ConversationPreview
 
 // -------------------- DATA MODELS --------------------
 data class LoginRequest(val username: String, val password: String)
@@ -34,7 +41,7 @@ data class Class(val id: Int, val name: String)
 
 data class Student2(
     val id: Int,
-    val full_name: String,  // Измените name на full_name
+    val full_name: String,
     val class_name: String? = null,
     val photo_url: String? = null,
 )
@@ -48,15 +55,9 @@ data class Profile(
     val createdAt: String
 )
 
-data class ProfileRequest(
-    val fullName: String,
-    val bio: String
-)
+data class ProfileRequest(val fullName: String, val bio: String)
 
-data class ProfileResponse(
-    val profile: Profile,
-    val photoUrl: String?
-)
+data class ProfileResponse(val profile: Profile, val photoUrl: String?)
 
 data class TokenVerificationResponse(
     val status: String,
@@ -86,7 +87,6 @@ data class GradeItem(
     val date: String
 )
 
-
 data class Teacher2(
     val id: Int,
     val full_name: String,
@@ -103,10 +103,26 @@ data class SendMessageRequest(
     val content: String
 )
 
+// Сообщение — как отдаёт бэкенд после /messages/send и по WebSocket
 data class MessageResponse(
+    val id: Int? = null,
     val sender_id: Int,
+    val recipient_id: Int,
     val content: String,
     val created_at: String
+)
+
+// Результат отправки
+data class SendMessageResult(
+    val status: String,
+    val conversation_id: Int,
+    val message: MessageResponse?
+)
+
+// WebSocket-конверт
+data class WsEnvelope(
+    val type: String,
+    val data: MessageResponse?
 )
 
 data class UserPublicInfo(
@@ -121,7 +137,7 @@ data class UserPublicInfo(
 // -------------------- API INTERFACE --------------------
 interface DiaryApiService {
     @POST("register")
-    suspend fun register(@Body user: LoginRequest): Response<Unit>
+    suspend fun register(@Body user: LoginRequest): RetrofitResponse<Unit>
 
     @FormUrlEncoded
     @POST("token")
@@ -129,48 +145,40 @@ interface DiaryApiService {
         @Field("username") username: String,
         @Field("password") password: String,
         @Field("grant_type") grantType: String = "password"
-    ): Response<TokenResponse>
+    ): RetrofitResponse<TokenResponse>
 
     @GET("protected")
-    suspend fun getProtected(): Response<ProtectedResponse>
+    suspend fun getProtected(): RetrofitResponse<ProtectedResponse>
 
     @GET("grades/{studentId}")
-    suspend fun getGrades(@Path("studentId") studentId: Int): Response<List<Grade>>
+    suspend fun getGrades(@Path("studentId") studentId: Int): RetrofitResponse<List<Grade>>
 
     @POST("grades")
-    suspend fun addGrade(@Body grade: Grade): Response<Grade>
+    suspend fun addGrade(@Body grade: Grade): RetrofitResponse<Grade>
 
     @GET("homeworks/{classId}")
-    suspend fun getHomeworks(@Path("classId") classId: Int): Response<List<Homework>>
+    suspend fun getHomeworks(@Path("classId") classId: Int): RetrofitResponse<List<Homework>>
 
     @POST("homeworks")
-    suspend fun addHomework(@Body homework: Homework): Response<Homework>
+    suspend fun addHomework(@Body homework: Homework): RetrofitResponse<Homework>
 
     @GET("students/{classId}")
-    suspend fun getClassStudents(@Path("classId") classId: Int): Response<List<Student>>
+    suspend fun getClassStudents(@Path("classId") classId: Int): RetrofitResponse<List<Student>>
 
     @GET("subjects")
-    suspend fun getSubjects(): Response<List<Subject>>
+    suspend fun getSubjects(): RetrofitResponse<List<Subject>>
 
     @GET("classes")
-    suspend fun getClasses(): Response<List<Class>>
-
+    suspend fun getClasses(): RetrofitResponse<List<Class>>
 
     @GET("/profile/photo")
-    suspend fun getPhoto(
-        @Header("Authorization") authHeader: String
-    ): Response<ResponseBody>
+    suspend fun getPhoto(@Header("Authorization") authHeader: String): RetrofitResponse<ResponseBody>
 
     @GET("verify-token")
-    suspend fun verifyToken(
-        @Header("Authorization") authHeader: String
-    ): Response<TokenVerificationResponse>
-
+    suspend fun verifyToken(@Header("Authorization") authHeader: String): RetrofitResponse<TokenVerificationResponse>
 
     @GET("profile/info")
-    suspend fun getProfileData(
-        @Header("Authorization") authHeader: String
-    ): Response<ProfileData>
+    suspend fun getProfileData(@Header("Authorization") authHeader: String): RetrofitResponse<ProfileData>
 
     @Multipart
     @POST("profile/full-update")
@@ -181,110 +189,106 @@ interface DiaryApiService {
         @Part("location") location: String,
         @Part("bio") bio: String,
         @Part photo: MultipartBody.Part? = null
-    ): Response<Unit>
+    ): RetrofitResponse<Unit>
 
     @GET("student-scores-full")
-    suspend fun getAllStudentScores(): Response<List<StudentScoreResponse>>
-
+    suspend fun getAllStudentScores(): RetrofitResponse<List<StudentScoreResponse>>
 
     @GET("users/all")
     suspend fun getAllUsersByRole(
+        @Query("include") include: String,
         @Query("role") role: String,
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 20
-    ): Response<List<Map<String, Any>>>
-
+    ): RetrofitResponse<List<Map<String, Any>>>
 
     @POST("messages/send")
-    suspend fun sendMessage(
-        @Body message: SendMessageRequest
-    ): Response<Unit>
+    suspend fun sendMessage(@Body message: SendMessageRequest): RetrofitResponse<SendMessageResult>
 
     @GET("messages/{userId}")
-    suspend fun getMessagesWithUser(
-        @Path("userId") userId: Int
-    ): Response<List<MessageResponse>>
+    suspend fun getMessagesWithUser(@Path("userId") userId: Int): RetrofitResponse<List<MessageResponse>>
 
     @GET("conversations")
-    suspend fun getStartedConversations(
-        @Header("Authorization") authHeader: String
-    ): Response<List<ConversationPreview>>
+    suspend fun getStartedConversations(@Header("Authorization") authHeader: String): RetrofitResponse<List<ConversationPreview>>
 
     @GET("users/{userId}")
-    suspend fun getUserPublicInfo(
-        @Path("userId") userId: Int
-    ): Response<UserPublicInfo>
+    suspend fun getUserPublicInfo(@Path("userId") userId: Int): RetrofitResponse<UserPublicInfo>
 
+    @GET("subject-scores/{subject_name}")
+    suspend fun getStudentScoresBySubject(@Path("subject_name") subjectName: String): RetrofitResponse<List<StudentSubjectScore>>
 }
 
 // -------------------- API MANAGER --------------------
 class ApiManager(context: Context) {
 
+    /** локальный бэкенд в эмуляторе */
     private val baseUrl = "http://10.0.2.2:8001/"
+    /** ws:// для отладки; в проде используй wss:// и домен */
+    private val wsBase = "ws://10.0.2.2:8001"
     private val timeout = 30L
+    private val gson = Gson()
 
     private val prefs = context.getSharedPreferences("DiaryPrefs", Context.MODE_PRIVATE)
 
-    private val retrofit: Retrofit by lazy {
-        val logging = HttpLoggingInterceptor { message -> Log.d("API_LOG", message) }
-        logging.level = HttpLoggingInterceptor.Level.BODY
+    private val logging = HttpLoggingInterceptor { message -> Log.d("API_LOG", message) }
+        .apply { level = HttpLoggingInterceptor.Level.BODY }
 
-        val client = OkHttpClient.Builder()
-            .connectTimeout(timeout, TimeUnit.SECONDS)
-            .readTimeout(timeout, TimeUnit.SECONDS)
-            .writeTimeout(timeout, TimeUnit.SECONDS)
-            .addInterceptor(logging)
-            .addInterceptor { chain ->
-                val request = chain.request()
-                val token = getToken()
-                val newRequest = if (!token.isNullOrEmpty() && !request.url.encodedPath.contains("token")) {
+    private val httpClient: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(timeout, TimeUnit.SECONDS)
+        .readTimeout(timeout, TimeUnit.SECONDS)
+        .writeTimeout(timeout, TimeUnit.SECONDS)
+        .addInterceptor(logging)
+        .addInterceptor { chain ->
+            val request = chain.request()
+            val token = getToken()
+            val newRequest =
+                if (!token.isNullOrEmpty() && !request.url.encodedPath.contains("token")) {
                     request.newBuilder()
                         .addHeader("Authorization", "Bearer $token")
                         .build()
                 } else request
-                chain.proceed(newRequest)
-            }
-            .build()
+            chain.proceed(newRequest)
+        }
+        .build()
 
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(baseUrl)
-            .client(client)
+            .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     private val api = retrofit.create(DiaryApiService::class.java)
 
-
-    fun saveUserId(id: Int) {
-        prefs.edit().putInt("user_id", id).apply()
-    }
-
+    // ====== токены/идентификаторы
+    fun saveUserId(id: Int) { prefs.edit().putInt("user_id", id).apply() }
     fun getUserId(): Int = prefs.getInt("user_id", -1)
-    fun saveToken(token: String) {
-        prefs.edit { putString("access_token", token) }
-    }
 
+    fun saveToken(token: String) { prefs.edit { putString("access_token", token) } }
     fun getToken(): String? = prefs.getString("access_token", null)
+
+    /** Удобно для WebSocket */
+    fun getAccessToken(): String? = getToken()
 
     fun clearData() {
         prefs.edit {
             remove("access_token")
-                .remove("user_id")
-                .remove("full_name")
-                .remove("work_place")
-                .remove("location")
-                .remove("bio")
+            remove("user_id")
+            remove("full_name")
+            remove("work_place")
+            remove("location")
+            remove("bio")
         }
     }
 
+    // ====== auth
     suspend fun register(username: String, password: String): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            api.register(LoginRequest(username, password)).isSuccessful
-        }.getOrElse {
-            Log.e("API_REGISTER", it.localizedMessage ?: "Unknown error")
-            false
-        }
+        runCatching { api.register(LoginRequest(username, password)).isSuccessful }
+            .getOrElse {
+                Log.e("API_REGISTER", it.localizedMessage ?: "Unknown error")
+                false
+            }
     }
 
     suspend fun login(username: String, password: String): Boolean = withContext(Dispatchers.IO) {
@@ -292,9 +296,7 @@ class ApiManager(context: Context) {
             val response = api.login(username, password)
             if (response.isSuccessful) {
                 response.body()?.access_token?.let { saveToken(it) }
-
-                val isValid = isTokenValid() 
-                isValid
+                isTokenValid()
             } else false
         }.getOrElse {
             Log.e("API_LOGIN", it.localizedMessage ?: "Unknown error")
@@ -302,7 +304,104 @@ class ApiManager(context: Context) {
         }
     }
 
+    suspend fun isTokenValid(): Boolean = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext false
+        runCatching {
+            val response = api.verifyToken("Bearer $token")
+            if (response.isSuccessful) {
+                val body = response.body()
+                body?.access_token?.let { saveToken(it) }
+                body?.user_id?.let { saveUserId(it) }
+                true
+            } else false
+        }.getOrElse {
+            Log.e("API_TOKEN_VERIFY", it.localizedMessage ?: "Token verification error")
+            false
+        }
+    }
 
+    // ====== profile / photos
+    suspend fun getProfile(): Bitmap? = withContext(Dispatchers.IO) {
+        runCatching {
+            val token = getToken() ?: return@withContext null
+            val response: RetrofitResponse<ResponseBody> = api.getPhoto("Bearer $token")
+            if (response.isSuccessful) {
+                response.body()?.byteStream()?.use { BitmapFactory.decodeStream(it) }
+            } else null
+        }.getOrElse {
+            Log.e("API_PROFILE_PHOTO", it.localizedMessage ?: "Photo fetch error"); null
+        }
+    }
+
+    suspend fun getProfilePhoto(): Bitmap? = withContext(Dispatchers.IO) {
+        runCatching {
+            val token = getToken() ?: return@withContext null
+            val response = api.getPhoto("Bearer $token")
+            if (response.isSuccessful) {
+                response.body()?.byteStream()?.use { BitmapFactory.decodeStream(it) }
+            } else null
+        }.getOrElse {
+            Log.e("ApiManager", it.localizedMessage ?: "Error loading photo"); null
+        }
+    }
+
+    suspend fun getProfileData(): ProfileData? = withContext(Dispatchers.IO) {
+        runCatching {
+            val token = getToken() ?: return@withContext null
+            val response = api.getProfileData("Bearer $token")
+            if (response.isSuccessful) response.body() else null
+        }.getOrElse {
+            Log.e("API_GET_PROFILE_DATA", it.localizedMessage ?: "Fetch profile error"); null
+        }
+    }
+
+    private fun createTempFileFromUri(context: Context, uri: Uri): File? =
+        try {
+            val file = File.createTempFile("upload_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                file.outputStream().use { output -> input.copyTo(output) }
+            }
+            file
+        } catch (e: Exception) {
+            Log.e("FileUtils", "Error creating temp file", e); null
+        }
+
+    suspend fun updateFullProfile(
+        context: Context,
+        imageUri: Uri?,
+        fullName: String,
+        work: String,
+        location: String,
+        bio: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        val token = getToken() ?: return@withContext false
+
+        val photoPart = imageUri?.let {
+            try {
+                val file = createTempFileFromUri(context, it) ?: return@let null
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("file", file.name, requestFile)
+            } catch (e: Exception) {
+                Log.e("API_PHOTO_PART", e.localizedMessage ?: "Photo part creation error"); null
+            }
+        }
+
+        runCatching {
+            val resp = api.updateFullProfile(
+                authHeader = "Bearer $token",
+                fullName = fullName,
+                workPlace = work,
+                location = location,
+                bio = bio,
+                photo = photoPart
+            )
+            resp.isSuccessful
+        }.getOrElse {
+            Log.e("API_FULL_UPDATE", it.localizedMessage ?: "Full update error"); false
+        }
+    }
+
+    // ====== misc
     suspend fun getProtectedMessage(): String? = withContext(Dispatchers.IO) {
         runCatching {
             val response = api.getProtected()
@@ -318,9 +417,7 @@ class ApiManager(context: Context) {
     }
 
     suspend fun addGrade(grade: Grade): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            api.addGrade(grade).isSuccessful
-        }.getOrElse { false }
+        runCatching { api.addGrade(grade).isSuccessful }.getOrElse { false }
     }
 
     suspend fun getHomeworks(classId: Int): List<Homework> = withContext(Dispatchers.IO) {
@@ -331,9 +428,7 @@ class ApiManager(context: Context) {
     }
 
     suspend fun addHomework(homework: Homework): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            api.addHomework(homework).isSuccessful
-        }.getOrElse { false }
+        runCatching { api.addHomework(homework).isSuccessful }.getOrElse { false }
     }
 
     suspend fun getClassStudents(classId: Int): List<Student> = withContext(Dispatchers.IO) {
@@ -357,124 +452,6 @@ class ApiManager(context: Context) {
         }.getOrDefault(emptyList())
     }
 
-
-    private fun createTempFileFromUri(context: Context, uri: Uri): File? {
-        return try {
-            val file = File.createTempFile("upload_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                file.outputStream().use { output -> input.copyTo(output) }
-            }
-            file
-        } catch (e: Exception) {
-            Log.e("FileUtils", "Error creating temp file", e)
-            null
-        }
-    }
-
-    suspend fun getProfile(): Bitmap? = withContext(Dispatchers.IO) {
-        runCatching {
-            val token = getToken() ?: return@withContext null
-            val response: Response<ResponseBody> = api.getPhoto("Bearer $token")
-            if (response.isSuccessful) {
-                response.body()?.byteStream()?.use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            } else {
-                null
-            }
-        }.getOrElse {
-            Log.e("API_PROFILE_PHOTO", it.localizedMessage ?: "Photo fetch error")
-            null
-        }
-    }
-
-    suspend fun getProfilePhoto(): Bitmap? = withContext(Dispatchers.IO) {
-        runCatching {
-            val token = getToken() ?: return@withContext null
-            val response = api.getPhoto("Bearer $token")
-            if (response.isSuccessful) {
-                response.body()?.byteStream()?.use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            } else {
-                null
-            }
-        }.getOrElse {
-            Log.e("ApiManager", it.localizedMessage ?: "Error loading photo")
-            null
-        }
-    }
-
-    suspend fun isTokenValid(): Boolean = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext false
-
-        runCatching {
-            val response = api.verifyToken("Bearer $token")
-            if (response.isSuccessful) {
-                val body = response.body()
-                body?.access_token?.let { saveToken(it) }
-                body?.user_id?.let { saveUserId(it) }
-                true
-            }
-            else {
-                false
-            }
-        }.getOrElse {
-            Log.e("API_TOKEN_VERIFY", it.localizedMessage ?: "Token verification error")
-            false
-        }
-    }
-
-
-    suspend fun getProfileData(): ProfileData? = withContext(Dispatchers.IO) {
-        runCatching {
-            val token = getToken() ?: return@withContext null
-            val response = api.getProfileData("Bearer $token")
-            println(response)
-            if (response.isSuccessful) response.body() else null
-        }.getOrElse {
-            Log.e("API_GET_PROFILE_DATA", it.localizedMessage ?: "Fetch profile error")
-            null
-        }
-    }
-
-    suspend fun updateFullProfile(
-        context: Context,
-        imageUri: Uri?,
-        fullName: String,
-        work: String,
-        location: String,
-        bio: String
-    ): Boolean = withContext(Dispatchers.IO) {
-        val token = getToken() ?: return@withContext false
-
-        val photoPart = imageUri?.let {
-            try {
-                val file = createTempFileFromUri(context, it) ?: return@let null
-                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("file", file.name, requestFile)
-            } catch (e: Exception) {
-                Log.e("API_PHOTO_PART", e.localizedMessage ?: "Photo part creation error")
-                null
-            }
-        }
-
-        return@withContext runCatching {
-            val response = api.updateFullProfile(
-                authHeader = "Bearer $token",
-                fullName = fullName,
-                workPlace = work,
-                location = location,
-                bio = bio,
-                photo = photoPart
-            )
-            response.isSuccessful
-        }.getOrElse {
-            Log.e("API_FULL_UPDATE", it.localizedMessage ?: "Full update error")
-            false
-        }
-    }
-
     suspend fun getAllStudentScores(): List<StudentScoreResponse> = withContext(Dispatchers.IO) {
         runCatching {
             val response = api.getAllStudentScores()
@@ -482,69 +459,59 @@ class ApiManager(context: Context) {
         }.getOrDefault(emptyList())
     }
 
-
-    suspend fun getAllStudents(page: Int = 1, perPage: Int = 20): List<Student2> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getAllUsersByRole("student", page, perPage)
-            if (response.isSuccessful) {
-                val raw = response.body() ?: return@runCatching emptyList()
-                raw.mapNotNull { item ->
-                    try {
-                        Student2(
-                            id = (item["id"] as? Double)?.toInt() ?: return@mapNotNull null,
-                            full_name = item["full_name"] as? String ?: "Неизвестно",
-                            class_name = item["class_name"] as? String,
-                            photo_url = item["photo_url"] as? String
-                        )
-                    } catch (e: Exception) {
-                        null
+    suspend fun getAllStudents(page: Int = 1, perPage: Int = 20, include_string: String = ""): List<Student2> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val response = api.getAllUsersByRole(include_string, "student", page, perPage)
+                if (response.isSuccessful) {
+                    val raw = response.body() ?: return@runCatching emptyList()
+                    raw.mapNotNull { item ->
+                        try {
+                            Student2(
+                                id = (item["id"] as? Double)?.toInt() ?: return@mapNotNull null,
+                                full_name = item["full_name"] as? String ?: "Неизвестно",
+                                class_name = item["class_name"] as? String,
+                                photo_url = item["photo_url"] as? String
+                            )
+                        } catch (_: Exception) { null }
                     }
-                }
-            } else {
-                emptyList()
-            }
-        }.getOrDefault(emptyList())
-    }
+                } else emptyList()
+            }.getOrDefault(emptyList())
+        }
 
-
-
-    suspend fun getAllTeachers(page: Int = 1, perPage: Int = 20): List<Teacher2> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getAllUsersByRole("teacher", page, perPage)
-            if (response.isSuccessful) {
-                val raw = response.body() ?: return@runCatching emptyList()
-                raw.mapNotNull { item ->
-                    try {
-                        Teacher2(
-                            id = (item["id"] as? Double)?.toInt() ?: return@mapNotNull null,
-                            full_name = item["full_name"] as? String ?: "Неизвестно",
-                            work_place = item["work_place"] as? String,
-                            location = item["location"] as? String,
-                            subject = item["subject"] as? String,
-                            classes = item["classes"] as? String,
-                            username = item["username"] as? String,
-                            password = item["password"] as? String
-                        )
-                    } catch (e: Exception) {
-                        null
+    suspend fun getAllTeachers(page: Int = 1, perPage: Int = 20, include_string: String = ""): List<Teacher2> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val response = api.getAllUsersByRole(include_string, "teacher", page, perPage)
+                if (response.isSuccessful) {
+                    val raw = response.body() ?: return@runCatching emptyList()
+                    raw.mapNotNull { item ->
+                        try {
+                            Teacher2(
+                                id = (item["id"] as? Double)?.toInt() ?: return@mapNotNull null,
+                                full_name = item["full_name"] as? String ?: "Неизвестно",
+                                work_place = item["work_place"] as? String,
+                                location = item["location"] as? String,
+                                subject = item["subject"] as? String,
+                                classes = item["classes"] as? String,
+                                username = item["username"] as? String,
+                                password = item["password"] as? String
+                            )
+                        } catch (_: Exception) { null }
                     }
-                }
-            } else {
-                emptyList()
-            }
-        }.getOrDefault(emptyList())
-    }
+                } else emptyList()
+            }.getOrDefault(emptyList())
+        }
 
-
-
-    suspend fun sendMessage(receiverId: Int, content: String): Boolean = withContext(Dispatchers.IO) {
+    // ====== чат: REST
+    /** Возвращает созданное сообщение (или null). Удобно для замены оптимистического. */
+    suspend fun sendMessage(receiverId: Int, content: String): MessageResponse? = withContext(Dispatchers.IO) {
         runCatching {
             val request = SendMessageRequest(receiverId, content)
             val response = api.sendMessage(request)
-            response.isSuccessful
+            if (response.isSuccessful) response.body()?.message else null
         }.getOrElse {
-            Log.e("API_SEND_MESSAGE", it.localizedMessage ?: "Send message error")
-            false
+            Log.e("API_SEND_MESSAGE", it.localizedMessage ?: "Send message error"); null
         }
     }
 
@@ -555,7 +522,6 @@ class ApiManager(context: Context) {
         }.getOrDefault(emptyList())
     }
 
-
     suspend fun getStartedConversations(): List<ConversationPreview> = withContext(Dispatchers.IO) {
         runCatching {
             val token = getToken() ?: return@withContext emptyList()
@@ -564,15 +530,57 @@ class ApiManager(context: Context) {
         }.getOrDefault(emptyList())
     }
 
-
     suspend fun getUserPublicInfo(userId: Int): UserPublicInfo? = withContext(Dispatchers.IO) {
         runCatching {
             val response = api.getUserPublicInfo(userId)
             if (response.isSuccessful) response.body() else null
         }.getOrElse {
-            Log.e("API_USER_INFO", it.localizedMessage ?: "User info error")
-            null
+            Log.e("API_USER_INFO", it.localizedMessage ?: "User info error"); null
         }
     }
 
+    suspend fun getScoresBySubject(subject: String): List<StudentSubjectScore> = withContext(Dispatchers.IO) {
+        runCatching {
+            val resp = api.getStudentScoresBySubject(subject)
+            if (resp.isSuccessful) resp.body() ?: emptyList() else emptyList()
+        }.getOrDefault(emptyList())
+    }
+
+    // ====== чат: WebSocket ======
+    interface ChatListener {
+        fun onMessage(msg: MessageResponse)
+        fun onOpen() {}
+        fun onClosed() {}
+        fun onFailure(t: Throwable) {}
+    }
+
+    /** Открывает WebSocket для чата. Вернёт WebSocket — сохрани и закрой его в onStop(). */
+    fun openChatSocket(listener: ChatListener): WebSocket? {
+        val token = getAccessToken() ?: return null
+        val url = "$wsBase/ws?token=$token"
+
+        val request = Request.Builder().url(url).build()
+        return httpClient.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                listener.onOpen()
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                try {
+                    val env = gson.fromJson(text, WsEnvelope::class.java)
+                    env?.data?.let { listener.onMessage(it) }
+                } catch (e: Exception) {
+                    Log.e("WS_PARSE", e.message ?: "parse error")
+                }
+            }
+
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                listener.onClosed()
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                listener.onFailure(t)
+            }
+        })
+    }
 }

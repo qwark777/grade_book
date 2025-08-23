@@ -3,7 +3,7 @@
     android:shape="oval">
 
     <!-- Цвет фона кнопки -->
-    <solid android:color="#6200EE" />
+    <solid android:color="@color/green" />
 
     <!-- Граница кнопки -->
     <stroke

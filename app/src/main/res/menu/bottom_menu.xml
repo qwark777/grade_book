@@ -3,11 +3,7 @@
         android:id="@+id/nav_home"
         android:icon="@drawable/home"
         android:title="Главная"/>
-    <item
-        android:id="@+id/nav_rating"
-        android:icon="@drawable/rating"
-        android:iconTint="@color/mint"
-        android:title="Рейтинг"/>
+
     <item
         android:id="@+id/nav_messages"
         android:icon="@drawable/messages"
@@ -16,6 +12,10 @@
         android:id="@+id/nav_teachers"
         android:icon="@drawable/users"
         android:title="Люди"/>
+    <item
+        android:id="@+id/nav_performance"
+        android:title="Успеваемость"
+        android:icon="@drawable/rating"/>
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/profile"

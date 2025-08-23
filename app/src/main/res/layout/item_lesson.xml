@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardLesson"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:padding="12dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- верхняя строка: время + номер -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="08:30–09:15"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/textIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• 1 урок"
+                android:layout_marginStart="8dp"
+                android:textColor="?attr/colorOutline"/>
+        </LinearLayout>
+
+        <!-- предмет -->
+        <TextView
+            android:id="@+id/textSubject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Математика"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"/>
+
+        <!-- учитель и кабинет -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textTeacher"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Иванова И.И."/>
+
+            <TextView
+                android:id="@+id/textRoom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="каб. 302"
+                android:background="@drawable/bg_room_chip"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
+        </LinearLayout>
+
+        <!-- бейдж изменения -->
+        <LinearLayout
+            android:id="@+id/changeContainer"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textChangeType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="замена"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnPrimary"
+                android:background="@drawable/bg_change_badge"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/textChangeNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Ведет Петров, каб. 210"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

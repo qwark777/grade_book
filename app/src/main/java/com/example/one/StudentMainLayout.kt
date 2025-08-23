@@ -22,21 +22,21 @@ class StudentMainLayout :  AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_home -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, Lessons())
-                        .commit()
-                    true
-                }
-
-                R.id.nav_rating -> {
-                    supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, RatingFragment())
                         .commit()
                     true
                 }
+
+//                R.id.nav_rating -> {
+//                    supportFragmentManager.beginTransaction()
+//                        .replace(R.id.fragment_container, RatingFragment())
+//                        .commit()
+//                    true
+//                }
 //
                 R.id.nav_profile -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, ProfileStudentFragment())
+                        .replace(R.id.fragment_container, RatingFragment())
                         .commit()
                     true
                 }

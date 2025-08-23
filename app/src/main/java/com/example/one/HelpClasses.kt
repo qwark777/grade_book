@@ -1,6 +1,7 @@
 package com.example.one
 
 data class TeacherData(
+    val id: Int,
     val fullName: String,
     val workPlace: String,
     val location: String,
@@ -11,10 +12,12 @@ data class TeacherData(
 )
 
 data class StudentData(
+    val id: Int,           // 👈 добавили id
     val fullName: String,
     val className: String,
     val school: String
 )
+
 data class ClassItem(
     val name: String,
     val studentCount: Int
@@ -46,3 +49,10 @@ interface UserBase {
     val full_name: String
     val photo_url: String?
 }
+
+data class StudentSubjectScore(
+    val student_id: Int,
+    val student_name: String,
+    val scores: List<Int>,
+    val average_score: Double?
+)

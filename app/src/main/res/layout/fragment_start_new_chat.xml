@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="12dp">
-
     <EditText
         android:id="@+id/searchEditText"
         android:layout_width="match_parent"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:layout_width="match_parent"
@@ -7,6 +8,7 @@
 
     <!-- Переключение между преподавателями и учениками -->
     <RadioGroup
+        android:layout_marginTop="20dp"
         android:id="@+id/switchRoleGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,25 +21,43 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Преподаватели"
-            android:checked="true"/>
+            android:checked="true"
+            app:buttonTint="@color/mint"/>
+
 
         <RadioButton
             android:id="@+id/studentsRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Ученики"
-            android:layout_marginStart="16dp"/>
+            android:layout_marginStart="16dp"
+            app:buttonTint="@color/mint"/>
     </RadioGroup>
 
-    <EditText
-        android:id="@+id/searchEditText"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="Поиск по имени"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:paddingStart="12dp"
-        android:background="@android:drawable/edit_text"
-        android:layout_marginBottom="8dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="300dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/search_bg"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:hint="Поиск"
+            android:paddingStart="12dp" />
+
+        <Button
+            android:id="@+id/searchButton"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/green"
+            android:text="Найти"
+            android:padding="0dp"/>
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/teacherRecyclerView"
@@ -51,6 +71,7 @@
         android:id="@+id/addTeacherButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/green"
         android:text="Добавить преподавателя"
         android:textStyle="bold"/>
 </LinearLayout>

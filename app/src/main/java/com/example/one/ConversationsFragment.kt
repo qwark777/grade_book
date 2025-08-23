@@ -28,13 +28,21 @@ class ConversationsFragment : Fragment() {
         return binding.root
     }
 
+    // ConversationsFragment.kt
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         apiManager = ApiManager(requireContext())
 
         adapter = ConversationAdapter { user ->
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, MessageFragment(user.id))
+                .replace(
+                    R.id.fragment_container,
+                    com.example.one.ui.messages.MessageFragment.newInstance(
+                        // если user.id = Long, добавь .toInt()
+                        user.id
+                    )
+                )
                 .addToBackStack(null)
                 .commit()
         }
@@ -51,6 +59,7 @@ class ConversationsFragment : Fragment() {
 
         loadStartedChats()
     }
+
 
     private fun loadStartedChats() {
         lifecycleScope.launch {

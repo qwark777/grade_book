@@ -12,7 +12,7 @@ import com.example.one.R
 import com.example.one.TeacherData
 
 class TeacherAdapter(
-    private val onEditClick: ((TeacherData) -> Unit)? = null
+    private val onWriteClick: ((TeacherData) -> Unit)? = null
 ) : ListAdapter<TeacherData, TeacherAdapter.TeacherViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TeacherViewHolder {
@@ -29,16 +29,15 @@ class TeacherAdapter(
         private val nameText: TextView = itemView.findViewById(R.id.teacherName)
         private val subjectClassesText: TextView = itemView.findViewById(R.id.teacherSubjectClasses)
         private val locationText: TextView = itemView.findViewById(R.id.teacherLocation)
-        private val editButton: Button = itemView.findViewById(R.id.editButton)
+        private val writeButton: Button = itemView.findViewById(R.id.writeButton)
 
         fun bind(teacher: TeacherData) {
             nameText.text = teacher.fullName
             subjectClassesText.text = "${teacher.subject} | ${teacher.classes}"
             locationText.text = teacher.workPlace
 
-            editButton.setOnClickListener {
-                onEditClick?.invoke(teacher)
-            }
+            // Кнопка "Написать" → колбэк наружу
+            writeButton.setOnClickListener { onWriteClick?.invoke(teacher) }
         }
     }
 
@@ -46,7 +45,6 @@ class TeacherAdapter(
         override fun areItemsTheSame(oldItem: TeacherData, newItem: TeacherData): Boolean {
             return oldItem.username == newItem.username
         }
-
         override fun areContentsTheSame(oldItem: TeacherData, newItem: TeacherData): Boolean {
             return oldItem == newItem
         }

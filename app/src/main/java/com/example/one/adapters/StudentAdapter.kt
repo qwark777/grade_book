@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.one.R
 import com.example.one.StudentData
 
-class StudentAdapter : ListAdapter<StudentData, StudentAdapter.StudentViewHolder>(DiffCallback()) {
+class StudentAdapter(
+    private val onWriteClick: ((StudentData) -> Unit)? = null
+) : ListAdapter<StudentData, StudentAdapter.StudentViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StudentViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -27,21 +29,23 @@ class StudentAdapter : ListAdapter<StudentData, StudentAdapter.StudentViewHolder
         private val nameText: TextView = itemView.findViewById(R.id.studentName)
         private val classText: TextView = itemView.findViewById(R.id.studentClass)
         private val schoolText: TextView = itemView.findViewById(R.id.studentSchool)
+        private val writeButton: Button? = itemView.findViewById(R.id.writeButton) // если есть в layout
 
         fun bind(student: StudentData) {
             nameText.text = student.fullName
             classText.text = student.className
             schoolText.text = student.school
 
-
+            writeButton?.setOnClickListener { onWriteClick?.invoke(student) }
+            // Если кнопки нет и нужно по клику по всей карточке:
+            // itemView.setOnClickListener { onWriteClick?.invoke(student) }
         }
     }
 
     class DiffCallback : DiffUtil.ItemCallback<StudentData>() {
         override fun areItemsTheSame(oldItem: StudentData, newItem: StudentData): Boolean {
-            return oldItem.fullName == newItem.fullName
+            return oldItem.id == newItem.id     // сравниваем по стабильному идентификатору
         }
-
         override fun areContentsTheSame(oldItem: StudentData, newItem: StudentData): Boolean {
             return oldItem == newItem
         }

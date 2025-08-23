@@ -107,7 +107,6 @@ class ProfileFragment : Fragment() {
             val profile = withContext(Dispatchers.IO) {
                 ApiManager(requireContext()).getProfileData()
             }
-            println(profile)
             if (profile != null) {
                 fullNameText.text = profile.full_name
                 workText.text = profile.work_place

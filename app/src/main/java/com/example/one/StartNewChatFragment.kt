@@ -34,7 +34,14 @@ class StartNewChatFragment : Fragment() {
 
         adapter = ConversationAdapter { user ->
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, MessageFragment(user.id))
+                .replace(
+                    R.id.fragment_container,
+                    com.example.one.ui.messages.MessageFragment.newInstance(
+                        // если id = Long, то добавь .toInt()
+                        user.id
+                    )
+                )
+
                 .addToBackStack(null)
                 .commit()
         }
