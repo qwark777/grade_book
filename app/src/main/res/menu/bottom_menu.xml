@@ -14,7 +14,7 @@
         android:title="Люди"/>
     <item
         android:id="@+id/nav_performance"
-        android:title="Успеваемость"
+        android:title="Успехи"
         android:icon="@drawable/rating"/>
     <item
         android:id="@+id/nav_profile"

@@ -14,9 +14,9 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         app:title="Расписание"
-        app:menu="@menu/menu_timetable"/>
+        app:menu="@menu/menu_timetable" />
 
-
+    <!-- Фильтры -->
     <LinearLayout
         android:id="@+id/filters"
         android:layout_width="match_parent"
@@ -59,16 +59,12 @@
             android:text="Сегодня" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <!-- Горизонтальный пейджер с «подглядывающими» страницами -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="669dp"
+        android:layout_height="match_parent"
         android:layout_marginTop="120dp"
-        android:clipToPadding="false"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="12dp"
-
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

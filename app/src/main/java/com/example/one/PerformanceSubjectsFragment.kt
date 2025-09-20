@@ -11,7 +11,7 @@ import com.example.one.databinding.FragmentPerformanceSubjectsBinding
 class PerformanceSubjectsFragment : Fragment() {
 
     private lateinit var binding: FragmentPerformanceSubjectsBinding
-    private val adapter = SubjectsAdapter()
+    private lateinit var adapter: SubjectsAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentPerformanceSubjectsBinding.inflate(inflater, container, false)
@@ -19,10 +19,13 @@ class PerformanceSubjectsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        adapter = SubjectsAdapter { subject ->
+            openSubjectDetailsSafely(subject.name)
+        }
+
         binding.rvSubjects.layoutManager = LinearLayoutManager(requireContext())
         binding.rvSubjects.adapter = adapter
 
-        // демо-данные
         adapter.submitList(
             listOf(
                 SubjectAvgUI("Математика", 4.5, 28),
@@ -32,4 +35,28 @@ class PerformanceSubjectsFragment : Fragment() {
             )
         )
     }
+
+    private fun openSubjectDetailsSafely(subjectName: String) {
+        val activityContainer = requireActivity().findViewById<View?>(R.id.fragment_container)
+        when {
+            // 1) Есть контейнер в Activity → вставляем туда (на весь экран)
+            activityContainer != null -> {
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, SubjectDetailsFragment.newInstance(subjectName))
+                    .addToBackStack("subject_$subjectName")
+                    .commit()
+            }
+
+            // 2) Нет контейнера в Activity → используем внутренний контейнер фрагмента
+            view?.findViewById<View?>(R.id.subject_details_container) != null -> {
+                childFragmentManager.beginTransaction()
+                    .replace(R.id.subject_details_container, SubjectDetailsFragment.newInstance(subjectName))
+                    .addToBackStack("subject_$subjectName")
+                    .commit()
+            }
+
+
+        }
+    }
+
 }

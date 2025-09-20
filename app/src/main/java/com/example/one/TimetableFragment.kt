@@ -9,6 +9,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.example.one.databinding.FragmentTimetableBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,6 +18,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class TimetableFragment(
     private val classId: Int,
@@ -25,9 +28,10 @@ class TimetableFragment(
     private var _binding: FragmentTimetableBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: TimetableAdapter
+    private lateinit var pagerAdapter: DayPagerAdapter
 
     private val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val DAY_MS = 24L * 3600 * 1000
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTimetableBinding.inflate(inflater, container, false)
@@ -37,16 +41,27 @@ class TimetableFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = TimetableAdapter()
-        binding.recycler.layoutManager = LinearLayoutManager(requireContext())
-        binding.recycler.adapter = adapter
+        // Настройка ViewPager2 для peek-эффекта
+        val vp = binding.viewPager
+        vp.offscreenPageLimit = 1
+        vp.clipToPadding = false
+        vp.clipChildren = false
 
-        // Верхние чипы (если есть в разметке)
-        binding.chipToday?.setOnClickListener {
-            loadWeek(System.currentTimeMillis())
+        val sidePeek = dp(14)           // сколько «видно» соседней страницы
+        val pageMargin = dp(12)
+
+        // Добавим внутренние паддинги, чтобы были видны края соседей
+        vp.setPadding(sidePeek, 0, sidePeek, 0)
+
+        // Смещение страниц (задаёт промежуток между ними)
+        vp.setPageTransformer { page, position ->
+            page.translationX = position * (-pageMargin).toFloat()
         }
+
+        // Верхние чипы
+        binding.chipToday?.setOnClickListener { loadWeek(System.currentTimeMillis()) }
         binding.chipWeekA?.setOnClickListener { loadWeek(weekStartMillis(System.currentTimeMillis())) }
-        binding.chipWeekB?.setOnClickListener { loadWeek(weekStartMillis(System.currentTimeMillis()) + 7L * 24 * 3600 * 1000) }
+        binding.chipWeekB?.setOnClickListener { loadWeek(weekStartMillis(System.currentTimeMillis()) + 7L * DAY_MS) }
 
         loadWeek(initialDateMillis)
     }
@@ -54,29 +69,55 @@ class TimetableFragment(
     private fun loadWeek(anyDateMillis: Long) {
         lifecycleScope.launch {
             try {
-                binding.recycler.isVisible = false
+                binding.viewPager.isVisible = false
 
-                // TODO: заменить на реальный вызов API:
-                // val from = dateFmt.format(weekStartMillis(anyDateMillis))
-                // val to   = dateFmt.format(weekStartMillis(anyDateMillis) + 6 * DAY_MS)
-                // val days = api.getClassDays(classId, from, to)
-                val days = withContext(Dispatchers.IO) {
-                    mockWeek(anyDateMillis) // заглушка
-                }
+                // TODO: заменить на реальный вызов API
+                val days = withContext(Dispatchers.IO) { mockWeek(anyDateMillis) }
 
-                adapter.submitList(buildItems(days))
-                binding.recycler.isVisible = true
+                pagerAdapter = DayPagerAdapter(days)
+                binding.viewPager.adapter = pagerAdapter
 
-                // скролл к сегодняшнему дню (по строке даты)
+                // Прокрутка к сегодняшнему дню
                 val todayStr = dateFmt.format(System.currentTimeMillis())
-                val idx = adapter.currentList.indexOfFirst {
-                    it is TimetableItem.Header && it.dateStr == todayStr
-                }
-                if (idx >= 0) binding.recycler.scrollToPosition(idx)
+                val idx = days.indexOfFirst { it.date == todayStr }
+                if (idx >= 0) binding.viewPager.setCurrentItem(idx, false)
+
+                binding.viewPager.isVisible = true
 
             } catch (_: Exception) {
                 Toast.makeText(requireContext(), "Не удалось загрузить расписание", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    /** Pager: каждая страница — один день, внутри вертикальный список TimetableAdapter */
+    private inner class DayPagerAdapter(
+        private val days: List<DaySchedule>
+    ) : RecyclerView.Adapter<DayPagerAdapter.DayVH>() {
+
+        inner class DayVH(val recycler: RecyclerView) : RecyclerView.ViewHolder(recycler)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayVH {
+            val rv = RecyclerView(parent.context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                clipToPadding = false
+                setPadding(dp(8), dp(8), dp(8), dp(12))
+                layoutManager = LinearLayoutManager(parent.context)
+            }
+            return DayVH(rv)
+        }
+
+        override fun getItemCount(): Int = days.size
+
+        override fun onBindViewHolder(holder: DayVH, position: Int) {
+            val day = days[position]
+            val items = buildItems(listOf(day))
+            val adapter = TimetableAdapter()
+            holder.recycler.adapter = adapter
+            adapter.submitList(items)
         }
     }
 
@@ -97,22 +138,20 @@ class TimetableFragment(
                 out += TimetableItem.EmptyDay(d.date, null)
                 continue
             }
-            d.lessons.forEach { l ->
-                out += TimetableItem.Lesson(d.date, l)
-            }
+            d.lessons.forEach { l -> out += TimetableItem.Lesson(d.date, l) }
         }
         return out
     }
 
-    // ---------- ВСПОМОГАТОРЫ / ЗАГЛУШКА ----------
-    private val DAY_MS = 24L * 3600 * 1000
+    // ---------- ВСПОМОГАТЕЛЬНОЕ ----------
+    private fun dp(v: Int): Int =
+        (v * resources.displayMetrics.density).roundToInt()
 
     private fun weekStartMillis(anyMillis: Long): Long {
         val cal = Calendar.getInstance()
         cal.firstDayOfWeek = Calendar.MONDAY
         cal.timeInMillis = anyMillis
-        // перейти к понедельнику
-        val dow = cal.get(Calendar.DAY_OF_WEEK) // 1..7 (вс -> сб)
+        val dow = cal.get(Calendar.DAY_OF_WEEK)
         val shift = when (dow) {
             Calendar.MONDAY -> 0
             Calendar.TUESDAY -> -1
@@ -140,7 +179,6 @@ class TimetableFragment(
         val room301 = SimpleRef(301, "каб. 301")
         val room302 = SimpleRef(302, "каб. 302")
 
-        // простая A/B по чётности недели от 1970
         val weekCode = if (((startMs / DAY_MS) / 7) % 2L == 0L) "A" else "B"
 
         for (i in 0 until 5) {
